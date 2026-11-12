@@ -1,12 +1,14 @@
 import { refresh } from "next/cache";
 import { Suspense } from "react";
+import { CheckButton } from "./check-button";
 
-interface Task {
+export interface Task {
   id: string;
   title: string;
+  is_done: boolean;
 }
 
-interface PostTask {
+export interface PostTask {
   title: string;
 }
 
@@ -42,7 +44,12 @@ async function TaskList() {
 }
 
 function TaskItem({ task }: { task: Task }) {
-  return <li>{task.title}</li>;
+  return (
+    <li>
+      <CheckButton task={task} />
+      <span>{task.title}</span>
+    </li>
+  );
 }
 
 function FormAddTask() {
