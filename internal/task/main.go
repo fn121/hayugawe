@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -10,10 +11,35 @@ import (
 type Task struct {
 	ID string `json:"id"`
 	Title string `json:"title"`
+	IsDone bool `json:"is_done"`
 }
+
+func(t *Task) MarkDone() {
+	t.IsDone = true
+}
+
+
+func(t *Task) MarkTodo() {
+	t.IsDone = false
+}
+
+
+func(t *Task) ToggleStatus() {
+	t.IsDone = !t.IsDone
+}
+
 
 type TaskService struct {
 	list []Task
+}
+
+func (ts *TaskService) FindByID(id string) (*Task, error) {
+	for idx, t := range ts.list {
+		if t.ID == id {
+			return &ts.list[idx], nil
+		}
+	}
+	return nil, fmt.Errorf("task with id %q not found", id)
 }
 
 type PostTask struct {
@@ -28,6 +54,7 @@ func NewTask(taskData PostTask) *Task{
 	return &Task{
 		ID: uuid.NewString(),
 		Title: taskData.Title,
+		IsDone: false,
 	}	
 }
 
@@ -51,6 +78,38 @@ func main() {
 
 		newTask := NewTask(taskData)
 		service.list = append(service.list, *newTask )
+
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	mux.HandleFunc("PATCH /api/tasks/{taskId}/status/done", func(w http.ResponseWriter, r *http.Request) {
+		taskId := r.PathValue("taskId");
+		
+		foundTask, err := service.FindByID(taskId)
+		if err != nil {
+			// return task not found
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusNotFound)
+			json.NewEncoder(w).Encode(HttpError{Message: err.Error()})
+		}
+		
+		foundTask.MarkDone()
+
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	mux.HandleFunc("PATCH /api/tasks/{taskId}/status/todo", func(w http.ResponseWriter, r *http.Request) {
+		taskId := r.PathValue("taskId");
+		
+		foundTask, err := service.FindByID(taskId)
+		if err != nil {
+			// return task not found
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusNotFound)
+			json.NewEncoder(w).Encode(HttpError{Message: err.Error()})
+		}
+		
+		foundTask.MarkTodo()
 
 		w.WriteHeader(http.StatusNoContent)
 	})
