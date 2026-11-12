@@ -1,8 +1,32 @@
+import { refresh } from "next/cache";
 import { Suspense } from "react";
 
 interface Task {
   id: string;
   title: string;
+}
+
+interface PostTask {
+  title: string;
+}
+
+export async function createTask(formData: FormData) {
+  "use server";
+  const title = formData.get("title");
+  const postTask: PostTask = {
+    title: title ? title.toString() : "untitled task",
+  };
+
+  // @TODO: handle not ok status response
+  await fetch("http://localhost:8080/api/tasks", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(postTask),
+  });
+
+  refresh();
 }
 
 async function TaskList() {
@@ -21,10 +45,22 @@ function TaskItem({ task }: { task: Task }) {
   return <li>{task.title}</li>;
 }
 
+function FormAddTask() {
+  return (
+    <form action={createTask}>
+      <input type="text" name="title" />
+      <button type="submit">Add</button>
+    </form>
+  );
+}
+
 export default function TasksPage() {
   return (
-    <Suspense fallback={<p>Memuat data....</p>}>
-      <TaskList />
-    </Suspense>
+    <div>
+      <FormAddTask />
+      <Suspense fallback={<p>Memuat data....</p>}>
+        <TaskList />
+      </Suspense>
+    </div>
   );
 }
