@@ -12,6 +12,9 @@ const nextConfig: NextConfig = {
       },
     },
   },
+
+  // edited for docker
+  output: "standalone",
 };
 
 export default nextConfig;

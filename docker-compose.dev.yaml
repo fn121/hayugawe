@@ -5,3 +5,22 @@ services:
       dockerfile: Dockerfile.dev
     ports:
       - 8080:8080
+    networks:
+      - app-network
+
+  server:
+    build:
+      context: web
+      dockerfile: Dockerfile.dev
+    ports:
+      - 3000:3000
+    environment:
+      - API_URL=http://task:8080
+    depends_on:
+      - task
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
