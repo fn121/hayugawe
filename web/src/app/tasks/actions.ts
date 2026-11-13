@@ -1,10 +1,11 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { baseApiUrl } from "./page";
 
 export async function markTaskAsDone(taskID: string) {
   // @TODO: handle not ok status response
-  await fetch(`http://localhost:8080/api/tasks/${taskID}/status/done`, {
+  await fetch(`${baseApiUrl}/api/tasks/${taskID}/status/done`, {
     method: "PATCH",
   });
 
@@ -13,7 +14,7 @@ export async function markTaskAsDone(taskID: string) {
 
 export async function markTaskAsTodo(taskID: string) {
   // @TODO: handle not ok status response
-  await fetch(`http://localhost:8080/api/tasks/${taskID}/status/todo`, {
+  await fetch(`${baseApiUrl}/api/tasks/${taskID}/status/todo`, {
     method: "PATCH",
   });
 

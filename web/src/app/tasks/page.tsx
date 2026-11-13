@@ -12,6 +12,7 @@ export interface PostTask {
   title: string;
 }
 
+export const baseApiUrl = process.env.API_URL;
 export async function createTask(formData: FormData) {
   "use server";
   const title = formData.get("title");
@@ -20,7 +21,7 @@ export async function createTask(formData: FormData) {
   };
 
   // @TODO: handle not ok status response
-  await fetch("http://localhost:8080/api/tasks", {
+  await fetch(`${baseApiUrl}/api/tasks`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -32,7 +33,7 @@ export async function createTask(formData: FormData) {
 }
 
 async function TaskList() {
-  const data = await fetch("http://localhost:8080/api/tasks");
+  const data = await fetch(`${baseApiUrl}/api/tasks`);
   const tasks: Task[] = await data.json();
   return (
     <ul>
