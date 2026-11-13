@@ -1,0 +1,7 @@
+services:
+  task:
+    build:
+      context: internal/task
+      dockerfile: Dockerfile.dev
+    ports:
+      - 8080:8080
