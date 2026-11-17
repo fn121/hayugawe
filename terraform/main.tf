@@ -62,3 +62,10 @@ resource "google_cloud_run_v2_service" "task" {
 
   depends_on = [ google_project_service.task_api_run ]
 }
+
+resource "google_cloud_run_v2_service_iam_binding" "task" {
+  name = google_cloud_run_v2_service.task.name
+  location = google_cloud_run_v2_service.task.location
+  role = "roles/run.invoker"
+  members = [ "allUsers" ]
+}
