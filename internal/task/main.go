@@ -3,7 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 
 	"github.com/google/uuid"
 )
@@ -59,6 +61,7 @@ func NewTask(taskData PostTask) *Task{
 }
 
 func main() {
+	log.Print("starting server...")
 	mux := http.NewServeMux()
 
 	service := TaskService{list: []Task{{ID: uuid.New().String(), Title: "Do something" }}}
@@ -114,5 +117,12 @@ func main() {
 		w.WriteHeader(http.StatusNoContent)
 	})
 
-	http.ListenAndServe(":8080", mux)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+		log.Printf("defaulting port to %s", port)
+	}
+
+	log.Printf("listening on port %s", port)
+	http.ListenAndServe(":"+port, mux)
 }
