@@ -45,7 +45,7 @@ resource "google_project_service" "task_api_run" {
 resource "google_cloud_run_v2_service" "task" {
   name = "${var.service_name}-service"
   location = var.region
-   ingress = "INGRESS_TRAFFIC_ALL"
+  ingress = "INGRESS_TRAFFIC_ALL"
 
   template {
     containers {
@@ -58,6 +58,16 @@ resource "google_cloud_run_v2_service" "task" {
         }
       }
     }
+  }
+
+  # PENTING: Abaikan perubahan image agar tidak bentrok dengan deploy manual / CI/CD
+  # important! ignore changes so hello run only once in first init
+  lifecycle {
+    ignore_changes = [
+      template[0].containers[0].image,
+      client,
+      client_version,
+    ]
   }
 
   depends_on = [ google_project_service.task_api_run ]
