@@ -1,12 +1,21 @@
-name: test workflow
+name: build and deploy
 
 on:
   - workflow_dispatch
-  - push
+
+env:
+  PROJECT_ID: "hayugawe-test"
+  REGION: "us-east1"
+  SERVICE_NAME: "task-service"
+  REPO_NAME: "task-repo"
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Nama perintahnya apa
-        run: echo "Workflow berhasil dijalankan secara manual!"
+      - name: Build and Push Docker Image
+        run: |
+          IMAGE_URI="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}"
+          docker build -t $IMAGE_URI .
+          docker push $IMAGE_URI
