@@ -47,6 +47,10 @@ resource "google_cloud_run_v2_service" "task" {
   location = var.region
   ingress = "INGRESS_TRAFFIC_ALL"
 
+  scaling {
+    min_instance_count = 0
+  }
+
   template {
     containers {
       image = "us-docker.pkg.dev/cloudrun/container/hello"
