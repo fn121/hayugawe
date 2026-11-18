@@ -8,6 +8,7 @@ env:
   REGION: "us-east1"
   SERVICE_NAME: "task-service"
   REPO_NAME: "task-repo"
+  CONTEXT_PATH: "./internal/task"
 
 jobs:
   build:
@@ -17,5 +18,5 @@ jobs:
       - name: Build and Push Docker Image
         run: |
           IMAGE_URI="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}"
-          docker build -t $IMAGE_URI .
+          docker build -t $IMAGE_URI -f ${{env.CONTEXT_PATH}}/Dockerfile.prod ${{env.CONTEXT_PATH}}
           docker push $IMAGE_URI
