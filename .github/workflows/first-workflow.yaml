@@ -8,9 +8,7 @@ on:
 env:
   PROJECT_ID: "hayugawe-test"
   REGION: "us-east1"
-  SERVICE_NAME: "task-service"
-  REPO_NAME: "task-repo"
-  CONTEXT_PATH: "./internal/task"
+  REPO_NAME: "task-repo" # @todo update repo to project instead per service
 
 jobs:
   build:
@@ -19,6 +17,14 @@ jobs:
     permissions:
       contents: read
       id-token: write
+
+    strategy:
+      matrix:
+        include:
+          - service_name: task-service
+            context_path: ./internal/task
+          - service_name: frontend-service
+            context_path: ./web
 
     steps:
       - name: Checkout kode
@@ -38,13 +44,13 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          IMAGE_URI="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}"
-          docker build -t $IMAGE_URI -f ${{env.CONTEXT_PATH}}/Dockerfile.prod ${{env.CONTEXT_PATH}}
+          IMAGE_URI="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ matrix.service_name }}:${{ github.sha }}"
+          docker build -t $IMAGE_URI -f ${{matrix.context_path}}/Dockerfile.prod ${{matrix.context_path}}
           docker push $IMAGE_URI
 
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2
         with:
-          service: ${{ env.SERVICE_NAME }}
+          service: ${{ matrix.service_name }}
           region: ${{ env.REGION }}
-          image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ matrix.service_name }}:${{ github.sha }}
