@@ -25,6 +25,7 @@ resource "google_billing_project_info" "project_billing" {
   billing_account = var.billing_account
 }
 
+# @todo update artifact for whole project instead per service
 resource "google_artifact_registry_repository" "task_repo" {
   format = "DOCKER"
   repository_id = "${var.service_name}-repo"

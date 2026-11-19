@@ -64,6 +64,12 @@ resource "google_cloud_run_v2_service" "frontend" {
     containers {
       image = "us-docker.pkg.dev/cloudrun/container/hello"
 
+      # Set env API_URL to connect to backend
+      env {
+        name = "API_URL"
+        value = google_cloud_run_v2_service.task.uri
+      }
+
       resources {
         limits = {
           cpu    = "1"
