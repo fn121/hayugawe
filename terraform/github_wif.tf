@@ -21,8 +21,11 @@ resource "google_service_account" "github_sa" {
 # set roles for gh actions sa
 resource "google_project_iam_member" "github_actions" {
   for_each = toset([
-      "roles/artifactregistry.writer",
-    "roles/run.developer"
+    "roles/artifactregistry.writer",
+    "roles/run.developer",
+
+    # better to separate to its own sa
+    "roles/iam.serviceAccountUser"
   ])
 
   project = var.project
