@@ -117,6 +117,12 @@ func main() {
 		w.WriteHeader(http.StatusNoContent)
 	})
 
+	// Test CICD. Auto build, and deploy when push to main branch. Safe to be deleted
+	mux.HandleFunc("GET /api/testcicd", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(`{"message": "build and deploy pipeline success"}`)
+	})
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
