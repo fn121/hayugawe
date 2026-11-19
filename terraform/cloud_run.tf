@@ -8,6 +8,9 @@ resource "google_cloud_run_v2_service" "task" {
   }
 
   template {
+    scaling {
+      max_instance_count = 1
+    }
     containers {
       image = "us-docker.pkg.dev/cloudrun/container/hello"
 
