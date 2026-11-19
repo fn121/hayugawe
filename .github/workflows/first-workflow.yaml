@@ -1,7 +1,9 @@
 name: build and deploy
 
 on:
-  - workflow_dispatch
+  workflow_dispatch:
+  push:
+    branches: main
 
 env:
   PROJECT_ID: "hayugawe-test"
