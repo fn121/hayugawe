@@ -24,3 +24,8 @@ variable "billing_account" {
   type = string
   description = "GCP billing account"
 }
+
+variable "github_repo" {
+  type = string
+  description = "github repo. format username/reponame"
+}
