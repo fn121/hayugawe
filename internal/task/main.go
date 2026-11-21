@@ -7,35 +7,15 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/fn121/hayugawe/internal/task/domain/task"
 	"github.com/google/uuid"
 )
 
-type Task struct {
-	ID string `json:"id"`
-	Title string `json:"title"`
-	IsDone bool `json:"is_done"`
-}
-
-func(t *Task) MarkDone() {
-	t.IsDone = true
-}
-
-
-func(t *Task) MarkTodo() {
-	t.IsDone = false
-}
-
-
-func(t *Task) ToggleStatus() {
-	t.IsDone = !t.IsDone
-}
-
-
 type TaskService struct {
-	list []Task
+	list []task.Task
 }
 
-func (ts *TaskService) FindByID(id string) (*Task, error) {
+func (ts *TaskService) FindByID(id string) (*task.Task, error) {
 	for idx, t := range ts.list {
 		if t.ID == id {
 			return &ts.list[idx], nil
@@ -52,8 +32,8 @@ type HttpError struct {
 	Message string `json:"message"`
 }
 
-func NewTask(taskData PostTask) *Task{
-	return &Task{
+func NewTask(taskData PostTask) *task.Task{
+	return &task.Task{
 		ID: uuid.NewString(),
 		Title: taskData.Title,
 		IsDone: false,
@@ -64,7 +44,7 @@ func main() {
 	log.Print("starting server...")
 	mux := http.NewServeMux()
 
-	service := TaskService{list: []Task{{ID: uuid.New().String(), Title: "Do something" }}}
+	service := TaskService{list: []task.Task{{ID: uuid.New().String(), Title: "Do something" }}}
 	mux.HandleFunc("GET /api/tasks", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(service.list)
