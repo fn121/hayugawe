@@ -72,8 +72,8 @@ func (mtr *MemoryTaskRepository) UpdateByID(_ context.Context, taskID string, ta
 }
 
 func NewMemoryTaskRepository() MemoryTaskRepository {
-	sampleTasks := []task.Task{}
-	sampleTasks = append(sampleTasks, *task.MustNewTask(task.PostTask{Title: "Makan siang"}))
+	newTask :=task.Task{ID: "cbb87a8c-c30d-4f01-be30-83181b3d9b41", Title: "Makan siang", IsDone: false}
+	sampleTasks := []task.Task{newTask}
 	
 	return MemoryTaskRepository{
 		list: sampleTasks,

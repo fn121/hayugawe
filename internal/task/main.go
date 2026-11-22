@@ -7,6 +7,8 @@ import (
 
 	"github.com/fn121/hayugawe/internal/task/adapters"
 	"github.com/fn121/hayugawe/internal/task/app"
+	"github.com/fn121/hayugawe/internal/task/app/command"
+	"github.com/fn121/hayugawe/internal/task/domain/task"
 	"github.com/fn121/hayugawe/internal/task/ports"
 )
 
@@ -18,7 +20,9 @@ func main() {
 
 	repository := adapters.NewMemoryTaskRepository()
 	service := app.NewTaskService(&repository)
-	httpServer := ports.NewHttpServer(service)
+	app := newApplication(&repository)
+	
+	httpServer := ports.NewHttpServer(service, app)
 	httpServer.RegisterRoutes(mux)
 
 	port := os.Getenv("PORT")
@@ -29,4 +33,15 @@ func main() {
 
 	log.Printf("listening on port %s", port)
 	log.Panic(http.ListenAndServe(":"+port, mux))
+}
+
+func newApplication(repo task.Repository) app.Application {
+
+	return app.Application{
+		Commands: app.Commands{
+			MarkTaskAsDone: command.NewMarkTaskAsDoneHandler(repo),
+			MarkTaskAsTodo: command.NewMarkTaskAsTodoHandler(repo),
+			CreateTask: command.NewCreateTaskHandler(repo),
+		},
+	}
 }

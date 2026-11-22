@@ -5,15 +5,17 @@ import (
 	"net/http"
 
 	"github.com/fn121/hayugawe/internal/task/app"
+	"github.com/fn121/hayugawe/internal/task/app/command"
 	"github.com/fn121/hayugawe/internal/task/domain/task"
 )
 
-func NewHttpServer(service app.TaskService) HttpServer{
-	return HttpServer{taskService: service}
+func NewHttpServer(service app.TaskService, app app.Application) HttpServer{
+	return HttpServer{taskService: service, app: app}
 }
 
 type HttpServer struct {
 	taskService app.TaskService
+	app app.Application
 }
 
 type HttpError struct {
@@ -39,6 +41,7 @@ func (h *HttpServer) RegisterRoutes(mux *http.ServeMux) {
 
 	mux.HandleFunc("POST /api/tasks", func(w http.ResponseWriter, r *http.Request) {
 		var taskData task.PostTask
+		
 		if readBodyErr := json.NewDecoder(r.Body).Decode(&taskData); readBodyErr != nil {
 			w.Header().Set("Content-Type", "application/json")
 			// send 400 bad request
@@ -46,7 +49,7 @@ func (h *HttpServer) RegisterRoutes(mux *http.ServeMux) {
 			json.NewEncoder(w).Encode(HttpError{Message: "Bad request"})
 		}
 
-		err := h.taskService.CreateTask(taskData)
+		err := h.app.Commands.CreateTask.Handle(r.Context(), command.CreateTask{TaskData: taskData})
 		if err != nil {
 			w.Header().Set("Content-Type", "application/json")
 			// send 400 bad request
@@ -60,8 +63,10 @@ func (h *HttpServer) RegisterRoutes(mux *http.ServeMux) {
 
 	mux.HandleFunc("PATCH /api/tasks/{taskId}/status/done", func(w http.ResponseWriter, r *http.Request) {
 		taskId := r.PathValue("taskId");
-		
-		foundTask, err := h.taskService.GetTask(taskId)
+
+		err := h.app.Commands.MarkTaskAsDone.Handle(r.Context(), command.MarkTaskAsDone{
+			TaskID: taskId,
+		})
 		if err != nil {
 			// return task not found
 			w.Header().Set("Content-Type", "application/json")
@@ -69,15 +74,13 @@ func (h *HttpServer) RegisterRoutes(mux *http.ServeMux) {
 			json.NewEncoder(w).Encode(HttpError{Message: err.Error()})
 		}
 		
-		foundTask.MarkDone()
-
 		w.WriteHeader(http.StatusNoContent)
 	})
 
 	mux.HandleFunc("PATCH /api/tasks/{taskId}/status/todo", func(w http.ResponseWriter, r *http.Request) {
 		taskId := r.PathValue("taskId");
 		
-		foundTask, err := h.taskService.GetTask(taskId)
+		err := h.app.Commands.MarkTaskAsTodo.Handle(r.Context(), command.MarkTaskAsTodo{TaskID: taskId})
 		if err != nil {
 			// return task not found
 			w.Header().Set("Content-Type", "application/json")
@@ -85,7 +88,6 @@ func (h *HttpServer) RegisterRoutes(mux *http.ServeMux) {
 			json.NewEncoder(w).Encode(HttpError{Message: err.Error()})
 		}
 		
-		foundTask.MarkTodo()
 
 		w.WriteHeader(http.StatusNoContent)
 	})
