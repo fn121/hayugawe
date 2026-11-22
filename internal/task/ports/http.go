@@ -2,34 +2,18 @@ package ports
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
-	"os"
 
 	"github.com/fn121/hayugawe/internal/task/app"
 	"github.com/fn121/hayugawe/internal/task/domain/task"
 )
 
-type TaskService struct {
-	list []task.Task
-}
-
-func (ts *TaskService) FindByID(id string) (*task.Task, error) {
-	for idx, t := range ts.list {
-		if t.ID == id {
-			return &ts.list[idx], nil
-		}
-	}
-	return nil, fmt.Errorf("task with id %q not found", id)
-}
-
 func NewHttpServer(service app.TaskService) HttpServer{
-	return HttpServer{}
+	return HttpServer{taskService: service}
 }
 
 type HttpServer struct {
-	service TaskService
+	taskService app.TaskService
 }
 
 type HttpError struct {
@@ -40,7 +24,17 @@ func (h *HttpServer) RegisterRoutes(mux *http.ServeMux) {
 
 	mux.HandleFunc("GET /api/tasks", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(h.service.list)
+		tasks, err := h.taskService.GetTaskList()
+		
+		if err != nil {
+			// w.Header().Set("Content-Type", "application/json")
+			// send 400 bad request
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(HttpError{Message: "Bad request"})
+			return
+		}
+
+		json.NewEncoder(w).Encode(tasks)
 	})
 
 	mux.HandleFunc("POST /api/tasks", func(w http.ResponseWriter, r *http.Request) {
@@ -52,8 +46,14 @@ func (h *HttpServer) RegisterRoutes(mux *http.ServeMux) {
 			json.NewEncoder(w).Encode(HttpError{Message: "Bad request"})
 		}
 
-		newTask := task.NewTask(taskData)
-		h.service.list = append(h.service.list, *newTask )
+		err := h.taskService.CreateTask(taskData)
+		if err != nil {
+			w.Header().Set("Content-Type", "application/json")
+			// send 400 bad request
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(HttpError{Message: "Bad request"})
+		}
+
 
 		w.WriteHeader(http.StatusNoContent)
 	})
@@ -61,7 +61,7 @@ func (h *HttpServer) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("PATCH /api/tasks/{taskId}/status/done", func(w http.ResponseWriter, r *http.Request) {
 		taskId := r.PathValue("taskId");
 		
-		foundTask, err := h.service.FindByID(taskId)
+		foundTask, err := h.taskService.GetTask(taskId)
 		if err != nil {
 			// return task not found
 			w.Header().Set("Content-Type", "application/json")
@@ -77,7 +77,7 @@ func (h *HttpServer) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("PATCH /api/tasks/{taskId}/status/todo", func(w http.ResponseWriter, r *http.Request) {
 		taskId := r.PathValue("taskId");
 		
-		foundTask, err := h.service.FindByID(taskId)
+		foundTask, err := h.taskService.GetTask(taskId)
 		if err != nil {
 			// return task not found
 			w.Header().Set("Content-Type", "application/json")
@@ -95,13 +95,4 @@ func (h *HttpServer) RegisterRoutes(mux *http.ServeMux) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(`{"message": "build and deploy pipeline success"}`)
 	})
-
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-		log.Printf("defaulting port to %s", port)
-	}
-
-	log.Printf("listening on port %s", port)
-	http.ListenAndServe(":"+port, mux)
 }

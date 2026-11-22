@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/fn121/hayugawe/internal/task/adapters"
 	"github.com/fn121/hayugawe/internal/task/app"
 	"github.com/fn121/hayugawe/internal/task/ports"
 )
@@ -15,7 +16,8 @@ func main() {
 	log.Print("starting server...")
 	mux := http.NewServeMux()
 
-	service := app.TaskService{}
+	repository := adapters.NewMemoryTaskRepository()
+	service := app.NewTaskService(&repository)
 	httpServer := ports.NewHttpServer(service)
 	httpServer.RegisterRoutes(mux)
 
@@ -26,5 +28,5 @@ func main() {
 	}
 
 	log.Printf("listening on port %s", port)
-	http.ListenAndServe(":"+port, mux)
+	log.Panic(http.ListenAndServe(":"+port, mux))
 }

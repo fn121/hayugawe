@@ -31,10 +31,22 @@ type PostTask struct {
 	Title string `json:"title"`
 }
 
-func NewTask(taskData PostTask) *Task{
+func NewTask(taskData PostTask) (*Task, error){
 	return &Task{
 		ID: uuid.NewString(),
 		Title: taskData.Title,
 		IsDone: false,
-	}	
+	}, nil
+}
+
+
+func MustNewTask(taskData PostTask) (*Task){
+
+	newTask, err := NewTask(taskData)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return newTask
 }
