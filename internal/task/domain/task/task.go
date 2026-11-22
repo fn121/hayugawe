@@ -1,6 +1,8 @@
 package task
 
 import (
+	"errors"
+
 	"github.com/google/uuid"
 )
 
@@ -32,6 +34,10 @@ type PostTask struct {
 }
 
 func NewTask(taskData PostTask) (*Task, error){
+	if taskData.Title == "" {
+		return nil, errors.New("empty Title")
+	}
+
 	return &Task{
 		ID: uuid.NewString(),
 		Title: taskData.Title,
