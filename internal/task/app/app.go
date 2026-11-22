@@ -1,6 +1,9 @@
 package app
 
-import "github.com/fn121/hayugawe/internal/task/app/command"
+import (
+	"github.com/fn121/hayugawe/internal/task/app/command"
+	"github.com/fn121/hayugawe/internal/task/app/query"
+)
 
 type Application struct {
 	Commands Commands
@@ -13,4 +16,6 @@ type Commands struct {
 	CreateTask command.CreateTaskHandler
 }
 
-type Queries struct {}
+type Queries struct {
+	GetTaskList query.GetTaskListHandler
+}

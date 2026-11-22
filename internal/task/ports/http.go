@@ -6,15 +6,15 @@ import (
 
 	"github.com/fn121/hayugawe/internal/task/app"
 	"github.com/fn121/hayugawe/internal/task/app/command"
+	"github.com/fn121/hayugawe/internal/task/app/query"
 	"github.com/fn121/hayugawe/internal/task/domain/task"
 )
 
-func NewHttpServer(service app.TaskService, app app.Application) HttpServer{
-	return HttpServer{taskService: service, app: app}
+func NewHttpServer(app app.Application) HttpServer{
+	return HttpServer{app: app}
 }
 
 type HttpServer struct {
-	taskService app.TaskService
 	app app.Application
 }
 
@@ -26,7 +26,8 @@ func (h *HttpServer) RegisterRoutes(mux *http.ServeMux) {
 
 	mux.HandleFunc("GET /api/tasks", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		tasks, err := h.taskService.GetTaskList()
+
+		tasks, err := h.app.Queries.GetTaskList.Handle(r.Context(), query.GetTaskList{})
 		
 		if err != nil {
 			// w.Header().Set("Content-Type", "application/json")

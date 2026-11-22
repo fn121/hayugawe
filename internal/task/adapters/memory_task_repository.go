@@ -127,3 +127,7 @@ func NewMemoryTaskRepository() MemoryTaskRepository {
 		list: sampleTasks,
 	}
 }
+
+func (mtr MemoryTaskRepository) GetTaskList() ([]query.Task, error) {
+	return mtr.list.ToReadModel(), nil
+}
