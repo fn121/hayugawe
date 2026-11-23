@@ -82,6 +82,10 @@ func (mtr *MemoryTaskRepository) AddTask(_ context.Context, task task.Task) erro
 
 // UpdateByID implements [task.Repository].
 func (mtr *MemoryTaskRepository) UpdateTask(_ context.Context, taskID string, t task.Task) error {
+	err := t.Validate()
+	if err != nil {
+		return err
+	}
 	t.ID = taskID
 
 	// update

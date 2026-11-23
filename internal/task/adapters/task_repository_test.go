@@ -39,6 +39,19 @@ func TestTaskRepository_UpdateTask(t *testing.T) {
 	assertTaskInRepository(t, r, task)
 }
 
+func TestTaskRepository_UpdateTask_invalid_task(t *testing.T) {
+	t.Parallel()
+	task := newTask()
+	r := adapters.NewMemoryTaskRepository(adapters.TaskList{adapters.TaskModel(*task)})
+	ctx := context.Background()
+
+	// update
+	task.Title = ""
+	errUpdate := r.UpdateTask(ctx, task.ID, *task)
+	require.Error(t, errUpdate)
+
+}
+
 func TestTaskRepository_UpdateTask_not_exist_return_error(t *testing.T) {
 	t.Parallel()
 	newTask := newTask()
