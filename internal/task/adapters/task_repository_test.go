@@ -11,19 +11,21 @@ import (
 )
 
 func TestTaskRepository_AddTask(t *testing.T) {
+	t.Parallel()
 	r := adapters.NewMemoryTaskRepository(adapters.TaskList{})
-	// pre assumptions
-	assertCountTasks(t, r, 0)
 
+	newTask := newTask()
 	ctx := context.Background()
-	err := r.AddTask(ctx, *newTask())
+	err := r.AddTask(ctx, *newTask)
 	require.NoError(t, err)
 
-	assertCountTasks(t, r, 1)
+	assertTaskInRepository(t, r, newTask)
 }
 
 func TestTaskRepository_UpdateTask(t *testing.T) {
-	task := newTaskTodo()
+	t.Parallel()
+	task := newTask()
+	task.MarkTodo()
 	r := adapters.NewMemoryTaskRepository(adapters.TaskList{adapters.TaskModel(*task)})
 	ctx := context.Background()
 
@@ -34,38 +36,30 @@ func TestTaskRepository_UpdateTask(t *testing.T) {
 	require.NoError(t, errUpdate)
 
 	// assert
-	updatedTask, err := r.FindTaskByID(ctx, task.ID)
-	require.NoError(t, err)
-	assert.Equal(t, true, updatedTask.IsDone)
+	assertTaskInRepository(t, r, task)
 }
 
 func TestTaskRepository_UpdateTask_not_exist_return_error(t *testing.T) {
-	newTask := newTaskTodo()
+	t.Parallel()
+	newTask := newTask()
 	r := adapters.NewMemoryTaskRepository(adapters.TaskList{})
 	ctx := context.Background()
 
 	errUpdate := r.UpdateTask(ctx, newTask.ID, *newTask)
-	require.ErrorIs(t, errUpdate, task.ErrTaskNotFound)
+	assert.ErrorIs(t, errUpdate, task.ErrTaskNotFound)
 }
 
 func newTask() *task.Task {
 	return task.MustNewTask(task.PostTask{Title: "Do home work"})
 }
 
-func newTaskTodo() *task.Task {
-	return &task.Task{ID: "should-uuid", Title: "task todo", IsDone: false}
-}
 
-func newTaskDone() *task.Task {
-	return &task.Task{ID: "should-uuid", Title: "task todo", IsDone: true}
-}
+func assertTaskInRepository(t *testing.T, repo task.Repository, task *task.Task) {
+	require.NotNil(t, task)
 
-
-func assertCountTasks(t *testing.T, r task.Repository, wantCount int) {
-	t.Helper()
 	ctx := context.Background()
-	list, err := r.FindTask(ctx)
-	assert.NoError(t, err)
+	taskFromRepo, err := repo.FindTaskByID(ctx, task.ID)
+	require.NoError(t, err)
 
-	assert.Equal(t, len(list), wantCount)
+	assert.Equal(t, task, taskFromRepo)
 }
