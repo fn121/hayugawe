@@ -96,13 +96,18 @@ func (mtr *MemoryTaskRepository) UpdateTask(_ context.Context, taskID string, ta
 	return nil
 }
 
-func NewMemoryTaskRepository() MemoryTaskRepository {
+func NewMemoryTaskRepository(tasklist TaskList) *MemoryTaskRepository {
+	
+	return &MemoryTaskRepository{
+		list: tasklist,
+	}
+}
+
+func NewMemoryTaskRepositoryWithSample() *MemoryTaskRepository {
 	newTask :=TaskModel{ID: "cbb87a8c-c30d-4f01-be30-83181b3d9b41", Title: "Makan siang", IsDone: false}
 	sampleTasks := []TaskModel{newTask}
 	
-	return MemoryTaskRepository{
-		list: sampleTasks,
-	}
+	return NewMemoryTaskRepository(sampleTasks)
 }
 
 // UpdateByID implements [query.GetTaskListReadModel].

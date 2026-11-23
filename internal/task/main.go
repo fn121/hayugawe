@@ -19,8 +19,8 @@ func main() {
 	log.Print("starting server...")
 	mux := http.NewServeMux()
 
-	repository := adapters.NewMemoryTaskRepository()
-	app := newApplication(&repository, &repository)
+	repository := adapters.NewMemoryTaskRepositoryWithSample()
+	app := newApplication(repository, repository)
 	
 	httpServer := ports.NewHttpServer(app)
 	httpServer.RegisterRoutes(mux)
