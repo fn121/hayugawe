@@ -30,7 +30,7 @@ func (h CreateTaskHandler) Handle(ctx context.Context, cmd CreateTask) (error) {
 		return fmt.Errorf("fail to create task: %w", err)
 	}
 
-	errSave := h.repo.Save(ctx, *newTask)
+	errSave := h.repo.AddTask(ctx, *newTask)
 	if errSave != nil {
 		return fmt.Errorf("fail to save: %w", errSave)
 	}

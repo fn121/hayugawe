@@ -2,7 +2,6 @@ package adapters
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/fn121/hayugawe/internal/task/app/query"
@@ -48,13 +47,13 @@ func domainToModel(t task.Task) (TaskModel) {
 }
 
 // Find implements [task.Repository].
-func (mtr *MemoryTaskRepository) Find(_ context.Context ) ([]task.Task, error) {
+func (mtr *MemoryTaskRepository) FindTask(_ context.Context ) ([]task.Task, error) {
 	tasks := mtr.list.ToDomain()
 	return tasks, nil
 }
 
-// FindByID implements [task.Repository].
-func (mtr *MemoryTaskRepository) FindByID(_ context.Context, taskID string) (*task.Task, error) {
+// FindTaskByID implements [task.Repository].
+func (mtr *MemoryTaskRepository) FindTaskByID(_ context.Context, taskID string) (*task.Task, error) {
 	for idx, t := range mtr.list {
 		if t.ID == taskID {
 			task := mtr.list[idx]
@@ -66,9 +65,9 @@ func (mtr *MemoryTaskRepository) FindByID(_ context.Context, taskID string) (*ta
 }
 
 // Save implements [task.Repository].
-func (mtr *MemoryTaskRepository) Save(_ context.Context, task task.Task) error {
+func (mtr *MemoryTaskRepository) AddTask(_ context.Context, task task.Task) error {
 	ctx := context.Background()
-	existTask, err := mtr.FindByID(ctx, task.ID)
+	existTask, err := mtr.FindTaskByID(ctx, task.ID)
 	
 	// task not found, add new task
 	if err != nil {
@@ -81,22 +80,10 @@ func (mtr *MemoryTaskRepository) Save(_ context.Context, task task.Task) error {
 	return nil
 }
 
-func (mtr *MemoryTaskRepository) Insert(_ context.Context, task task.Task) error {
-	ctx := context.Background()
-	existTask, _ := mtr.FindByID(ctx, task.ID)
-
-	if existTask != nil {
-		return errors.New("task already exist")
-	} else {
-		mtr.list = append(mtr.list, domainToModel(task))
-		return nil
-	}
-}
-
 // UpdateByID implements [task.Repository].
-func (mtr *MemoryTaskRepository) UpdateByID(_ context.Context, taskID string, task task.Task) error {
+func (mtr *MemoryTaskRepository) UpdateTask(_ context.Context, taskID string, task task.Task) error {
 	ctx := context.Background()
-	existTask, err := mtr.FindByID(ctx, task.ID)
+	existTask, err := mtr.FindTaskByID(ctx, task.ID)
 	
 	// task not found, add new task
 	if err != nil {

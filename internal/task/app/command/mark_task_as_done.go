@@ -24,14 +24,14 @@ func NewMarkTaskAsDoneHandler(repo task.Repository) MarkTaskAsDoneHandler {
 }
 
 func (h MarkTaskAsDoneHandler) Handle(ctx context.Context, cmd MarkTaskAsDone) (error) {
-	task, err := h.repo.FindByID(ctx, cmd.TaskID)
+	task, err := h.repo.FindTaskByID(ctx, cmd.TaskID)
 	if err != nil {
 		return fmt.Errorf("failed to find task: %w", err)
 	}
 
 	task.MarkDone()
 
-	return h.repo.UpdateByID(
+	return h.repo.UpdateTask(
 		ctx,
 		cmd.TaskID,
 		*task,
