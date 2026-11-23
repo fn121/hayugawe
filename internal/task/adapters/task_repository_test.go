@@ -22,9 +22,35 @@ func TestTaskRepository_AddTask(t *testing.T) {
 	assertCountTasks(t, r, 1)
 }
 
+func TestTaskRepository_UpdateTask(t *testing.T) {
+	task := newTaskTodo()
+	r := adapters.NewMemoryTaskRepository(adapters.TaskList{adapters.TaskModel(*task)})
+	ctx := context.Background()
+
+
+	// update
+	task.MarkDone()
+	errUpdate := r.UpdateTask(ctx, task.ID, *task)
+	require.NoError(t, errUpdate)
+
+	// assert
+	updatedTask, err := r.FindTaskByID(ctx, task.ID)
+	require.NoError(t, err)
+	assert.Equal(t, true, updatedTask.IsDone)
+}
+
 func newTask() *task.Task {
 	return task.MustNewTask(task.PostTask{Title: "Do home work"})
 }
+
+func newTaskTodo() *task.Task {
+	return &task.Task{ID: "should-uuid", Title: "task todo", IsDone: false}
+}
+
+func newTaskDone() *task.Task {
+	return &task.Task{ID: "should-uuid", Title: "task todo", IsDone: true}
+}
+
 
 func assertCountTasks(t *testing.T, r task.Repository, wantCount int) {
 	t.Helper()

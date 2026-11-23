@@ -82,18 +82,16 @@ func (mtr *MemoryTaskRepository) AddTask(_ context.Context, task task.Task) erro
 
 // UpdateByID implements [task.Repository].
 func (mtr *MemoryTaskRepository) UpdateTask(_ context.Context, taskID string, task task.Task) error {
-	ctx := context.Background()
-	existTask, err := mtr.FindTaskByID(ctx, task.ID)
-	
-	// task not found, add new task
-	if err != nil {
-		return fmt.Errorf("fail to find task: %w", err)
-	}
+	task.ID = taskID
 
-	// update task
-	existTask.Title = task.Title
-	existTask.IsDone = task.IsDone
-	return nil
+	// update
+	for i := range mtr.list {
+		if mtr.list[i].ID == taskID {
+			mtr.list[i] = domainToModel(task)
+			return nil
+		}
+	}
+	return fmt.Errorf("task with id %q not found", taskID)
 }
 
 func NewMemoryTaskRepository(tasklist TaskList) *MemoryTaskRepository {
