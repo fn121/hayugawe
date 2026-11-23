@@ -24,6 +24,18 @@ func(t *Task) ToggleStatus() {
 	t.IsDone = !t.IsDone
 }
 
+func (t *Task) Validate() error {
+	if t.ID == "" {
+		return errors.New("empty ID")
+	}
+
+	if t.Title == "" {
+		return errors.New("empty Title")
+	}
+	
+	return nil
+}
+
 
 type TaskService struct {
 	list []Task
@@ -34,15 +46,17 @@ type PostTask struct {
 }
 
 func NewTask(taskData PostTask) (*Task, error){
-	if taskData.Title == "" {
-		return nil, errors.New("empty Title")
-	}
-
-	return &Task{
+	task := Task{
 		ID: uuid.NewString(),
 		Title: taskData.Title,
 		IsDone: false,
-	}, nil
+	}
+
+	err := task.Validate();
+	if err != nil {
+		return nil, err
+	}
+	return &task, nil
 }
 
 
