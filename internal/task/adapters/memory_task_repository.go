@@ -43,23 +43,13 @@ type MemoryTaskRepository struct {
 	list TaskList
 }
 
-func (mtr *MemoryTaskRepository) unmarshalListToDomain( ) ([]task.Task) {
-	tasks := []task.Task{}
-
-	for _, t := range mtr.list {
-		tasks = append(tasks, t.TypeDomain())
-	}
-	
-	return tasks
-}
-
-func (mtr *MemoryTaskRepository) marshalItemFromDomain(t task.Task) (TaskModel) {
+func domainToModel(t task.Task) (TaskModel) {
 	return TaskModel{ID: t.ID, Title: t.Title, IsDone: t.IsDone}
 }
 
 // Find implements [task.Repository].
 func (mtr *MemoryTaskRepository) Find(_ context.Context ) ([]task.Task, error) {
-	tasks := mtr.unmarshalListToDomain()
+	tasks := mtr.list.ToDomain()
 	return tasks, nil
 }
 
@@ -82,7 +72,7 @@ func (mtr *MemoryTaskRepository) Save(_ context.Context, task task.Task) error {
 	
 	// task not found, add new task
 	if err != nil {
-		mtr.list = append(mtr.list, mtr.marshalItemFromDomain(task))
+		mtr.list = append(mtr.list, domainToModel(task))
 	} else {
 		// update task
 		existTask.Title = task.Title
@@ -98,7 +88,7 @@ func (mtr *MemoryTaskRepository) Insert(_ context.Context, task task.Task) error
 	if existTask != nil {
 		return errors.New("task already exist")
 	} else {
-		mtr.list = append(mtr.list, mtr.marshalItemFromDomain(task))
+		mtr.list = append(mtr.list, domainToModel(task))
 		return nil
 	}
 }
@@ -128,6 +118,7 @@ func NewMemoryTaskRepository() MemoryTaskRepository {
 	}
 }
 
+// UpdateByID implements [query.GetTaskListReadModel].
 func (mtr MemoryTaskRepository) GetTaskList() ([]query.Task, error) {
 	return mtr.list.ToReadModel(), nil
 }
