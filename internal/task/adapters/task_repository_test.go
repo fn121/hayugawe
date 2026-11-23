@@ -39,6 +39,15 @@ func TestTaskRepository_UpdateTask(t *testing.T) {
 	assert.Equal(t, true, updatedTask.IsDone)
 }
 
+func TestTaskRepository_UpdateTask_not_exist_return_error(t *testing.T) {
+	newTask := newTaskTodo()
+	r := adapters.NewMemoryTaskRepository(adapters.TaskList{})
+	ctx := context.Background()
+
+	errUpdate := r.UpdateTask(ctx, newTask.ID, *newTask)
+	require.ErrorIs(t, errUpdate, task.ErrTaskNotFound)
+}
+
 func newTask() *task.Task {
 	return task.MustNewTask(task.PostTask{Title: "Do home work"})
 }
