@@ -13,17 +13,8 @@ import (
 	"github.com/fn121/hayugawe/internal/task/ports"
 )
 
-
-
-func main() {
+func RunHTTPServer(handler *http.ServeMux) {
 	log.Print("starting server...")
-	mux := http.NewServeMux()
-
-	repository := adapters.NewMemoryTaskRepositoryWithSample()
-	app := newApplication(repository, repository)
-	
-	httpServer := ports.NewHttpServer(app)
-	httpServer.RegisterRoutes(mux)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -32,7 +23,19 @@ func main() {
 	}
 
 	log.Printf("listening on port %s", port)
-	log.Panic(http.ListenAndServe(":"+port, mux))
+	log.Panic(http.ListenAndServe(":"+port, handler))
+}
+
+func main() {
+	handler := http.NewServeMux()
+
+	repository := adapters.NewMemoryTaskRepositoryWithSample()
+	app := newApplication(repository, repository)
+	
+	httpServer := ports.NewHttpServer(app)
+	httpServer.RegisterRoutes(handler)
+
+	RunHTTPServer(handler)
 }
 
 func newApplication(repo task.Repository, queryRepo query.GetTaskListReadModel ) app.Application {
