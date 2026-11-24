@@ -21,7 +21,7 @@ tags:
     description: Task management
 
 paths:
-  /api/tasks:
+  /tasks:
     get:
       tags:
         - Tasks
@@ -64,7 +64,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/HttpError"
 
-  /api/tasks/{taskId}/status/done:
+  /tasks/{taskId}/status/done:
     patch:
       tags:
         - Tasks
@@ -87,7 +87,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/HttpError"
 
-  /api/tasks/{taskId}/status/todo:
+  /tasks/{taskId}/status/todo:
     patch:
       tags:
         - Tasks
@@ -110,7 +110,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/HttpError"
 
-  /api/testcicd:
+  /testcicd:
     get:
       tags:
         - Tasks

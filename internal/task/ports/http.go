@@ -18,10 +18,6 @@ type HttpServer struct {
 	app app.Application
 }
 
-type HttpError struct {
-	Message string `json:"message"`
-}
-
 func (h *HttpServer) RegisterRoutes(mux *http.ServeMux) {
 
 	mux.HandleFunc("GET /api/tasks", func(w http.ResponseWriter, r *http.Request) {
