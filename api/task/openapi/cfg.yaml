@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/oapi-codegen/oapi-codegen/v2.9.0/configuration-schema.json
+# Required: Go package name
+package: ports
+
+# server to generate
+generate:
+  std-http-server: true
+  models: true

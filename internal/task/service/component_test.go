@@ -4,15 +4,10 @@ import (
 	"net/http"
 	"os"
 	"testing"
-
-	"github.com/fn121/hayugawe/internal/task/ports"
 )
 
 func startService() (bool) {
-	app := NewComponentTestApplication();
 	mux := http.NewServeMux()
-	taskServer := ports.NewHttpServer(app)
-	taskServer.RegisterRoutes(mux)
 
 	taskServiceHttpAddr := os.Getenv("TASK_SERVICE_HTTP_ADDR")
 	if taskServiceHttpAddr == "" {
