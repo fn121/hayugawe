@@ -15,3 +15,4 @@ tasks:
     desc: generate open api server and clients
     cmds:
       - cd internal/task && go tool oapi-codegen --config ../../api/task/openapi/cfg.yaml -o ports/server_interface.gen.go ../../api/task/openapi/openapi.yaml
+      - cd internal/task && go tool oapi-codegen --package task --generate client,models -o common/client/task/client.gen.go ../../api/task/openapi/openapi.yaml
