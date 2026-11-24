@@ -23,16 +23,16 @@ func NewCreateTaskHandler(repo task.Repository) CreateTaskHandler {
 	return CreateTaskHandler{repo}
 }
 
-func (h CreateTaskHandler) Handle(ctx context.Context, cmd CreateTask) (error) {
+func (h CreateTaskHandler) Handle(ctx context.Context, cmd CreateTask) (taskID string, error error) {
 	
 	newTask, err := task.NewTask(cmd.TaskData)
 	if err != nil {
-		return fmt.Errorf("fail to create task: %w", err)
+		return "", fmt.Errorf("fail to create task: %w", err)
 	}
 
 	errSave := h.repo.AddTask(ctx, *newTask)
 	if errSave != nil {
-		return fmt.Errorf("fail to save: %w", errSave)
+		return "", fmt.Errorf("fail to save: %w", errSave)
 	}
-	return nil
+	return newTask.ID, nil
 }

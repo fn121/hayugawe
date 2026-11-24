@@ -534,11 +534,18 @@ func (r GetTaskListResponse) ContentType() string {
 	return ""
 }
 
+// CreateTaskResponse204Headers the declared response headers of an HTTP 204 response for CreateTask
+type CreateTaskResponse204Headers struct {
+	ContentLocation string
+}
+
 type CreateTaskResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *HttpError
+	// Headers204 the parsed response headers for an HTTP 204 response
+	Headers204 *CreateTaskResponse204Headers
 }
 
 // GetJSON400 returns the response for an HTTP 400 `application/json` response
@@ -846,6 +853,19 @@ func ParseCreateTaskResponse(rsp *http.Response) (*CreateTaskResponse, error) {
 		}
 		response.JSON400 = &dest
 
+	}
+
+	switch {
+	case rsp.StatusCode == 204:
+		var headers CreateTaskResponse204Headers
+		if values := rsp.Header.Values("Content-Location"); len(values) > 0 {
+			var value string
+			if err := runtime.BindStyledParameterWithOptions("simple", "Content-Location", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: "uri-reference"}); err != nil {
+				return nil, err
+			}
+			headers.ContentLocation = value
+		}
+		response.Headers204 = &headers
 	}
 
 	return response, nil

@@ -48,7 +48,7 @@ func (h HttpServer) CreateTask(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(HttpError{Message: "Bad request"})
 	}
 
-	err := h.app.Commands.CreateTask.Handle(r.Context(), command.CreateTask{TaskData: taskData})
+	taskID, err := h.app.Commands.CreateTask.Handle(r.Context(), command.CreateTask{TaskData: taskData})
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		// send 400 bad request
@@ -57,6 +57,7 @@ func (h HttpServer) CreateTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 
+	w.Header().Set("Content-Location", "/tasks/"+taskID)
 	w.WriteHeader(http.StatusNoContent)
 }
 
