@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/fn121/hayugawe/internal/task/common/client/task"
 	"github.com/fn121/hayugawe/internal/task/common/server"
 	"github.com/fn121/hayugawe/internal/task/common/tests"
 	"github.com/fn121/hayugawe/internal/task/ports"
@@ -30,6 +31,27 @@ func TestCreateAndGetListTask(t *testing.T) {
 	}
 
 	assert.Contains(t, taskIDs, taskID)
+}
+
+func TestMarkTaskAsDone(t *testing.T) {
+	t.Parallel()
+	
+	client := tests.NewTaskHTTPClient(t)
+
+	taskID := client.CreateTask(t, "do component test")
+	require.NotEmpty(t, taskID)
+
+	client.MarkTaskAsDone(t, taskID)
+	tasks := client.GetTaskList(t)
+
+	var ourTask task.Task
+	for _, task := range tasks {
+		if task.Id == taskID {
+			ourTask = task
+		}
+	}
+
+	assert.Equal(t, true, ourTask.IsDone)
 }
 
 func startService() (bool) {

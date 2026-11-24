@@ -73,6 +73,22 @@ func (c TaskHTTPClient) GetTaskList(t *testing.T) []taskclient.Task  {
 	return *resp.JSON200
 }
 
+func (c TaskHTTPClient) MarkTaskAsDone(t *testing.T, taskID string) {
+	ctx := context.Background()
+	resp, err := c.client.MarkTaskAsDoneWithResponse(ctx, taskID)
+	require.NoError(t, err)
+
+	assert.Equal(t, http.StatusNoContent, resp.StatusCode())
+}
+
+func (c TaskHTTPClient) MarkTaskAsTodo(t *testing.T, taskID string) {
+	ctx := context.Background()
+	resp, err := c.client.MarkTaskAsTodoWithResponse(ctx, taskID)
+	require.NoError(t, err)
+
+	assert.Equal(t, http.StatusNoContent, resp.StatusCode())
+}
+
 func lastPathElement(path string) string {
 	parts := strings.Split(path, "/")
 	return parts[len(parts)-1]
