@@ -57,6 +57,14 @@ paths:
       responses:
         "204":
           description: Task created successfully
+          headers:
+            Content-Location:
+              description: URI for created task
+              required: true
+              schema:
+                type: string
+                format: uri-reference
+                example: /tasks/12345
         "400":
           description: Bad request
           content:
