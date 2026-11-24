@@ -63,7 +63,7 @@ func startService() (bool) {
 	appTest := NewComponentTestApplication()
 	mux := http.NewServeMux()
 	handler := ports.HandlerFromMux(ports.NewHttpServer(appTest), mux)
-	go server.RunHTTPServer(handler)
+	go server.RunHTTPServerOnAddr(taskServiceHttpAddr, handler)
 
 	ok := tests.WaitForPort(taskServiceHttpAddr)
 	if !ok {
