@@ -2,7 +2,6 @@ package adapters
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/fn121/hayugawe/internal/task/app/query"
@@ -43,28 +42,18 @@ type MemoryTaskRepository struct {
 	list TaskList
 }
 
-func (mtr *MemoryTaskRepository) unmarshalListToDomain( ) ([]task.Task) {
-	tasks := []task.Task{}
-
-	for _, t := range mtr.list {
-		tasks = append(tasks, t.TypeDomain())
-	}
-	
-	return tasks
-}
-
-func (mtr *MemoryTaskRepository) marshalItemFromDomain(t task.Task) (TaskModel) {
+func domainToModel(t task.Task) (TaskModel) {
 	return TaskModel{ID: t.ID, Title: t.Title, IsDone: t.IsDone}
 }
 
 // Find implements [task.Repository].
-func (mtr *MemoryTaskRepository) Find(_ context.Context ) ([]task.Task, error) {
-	tasks := mtr.unmarshalListToDomain()
+func (mtr *MemoryTaskRepository) FindTask(_ context.Context ) ([]task.Task, error) {
+	tasks := mtr.list.ToDomain()
 	return tasks, nil
 }
 
-// FindByID implements [task.Repository].
-func (mtr *MemoryTaskRepository) FindByID(_ context.Context, taskID string) (*task.Task, error) {
+// FindTaskByID implements [task.Repository].
+func (mtr *MemoryTaskRepository) FindTaskByID(_ context.Context, taskID string) (*task.Task, error) {
 	for idx, t := range mtr.list {
 		if t.ID == taskID {
 			task := mtr.list[idx]
@@ -76,13 +65,13 @@ func (mtr *MemoryTaskRepository) FindByID(_ context.Context, taskID string) (*ta
 }
 
 // Save implements [task.Repository].
-func (mtr *MemoryTaskRepository) Save(_ context.Context, task task.Task) error {
+func (mtr *MemoryTaskRepository) AddTask(_ context.Context, task task.Task) error {
 	ctx := context.Background()
-	existTask, err := mtr.FindByID(ctx, task.ID)
+	existTask, err := mtr.FindTaskByID(ctx, task.ID)
 	
 	// task not found, add new task
 	if err != nil {
-		mtr.list = append(mtr.list, mtr.marshalItemFromDomain(task))
+		mtr.list = append(mtr.list, domainToModel(task))
 	} else {
 		// update task
 		existTask.Title = task.Title
@@ -91,43 +80,39 @@ func (mtr *MemoryTaskRepository) Save(_ context.Context, task task.Task) error {
 	return nil
 }
 
-func (mtr *MemoryTaskRepository) Insert(_ context.Context, task task.Task) error {
-	ctx := context.Background()
-	existTask, _ := mtr.FindByID(ctx, task.ID)
-
-	if existTask != nil {
-		return errors.New("task already exist")
-	} else {
-		mtr.list = append(mtr.list, mtr.marshalItemFromDomain(task))
-		return nil
-	}
-}
-
 // UpdateByID implements [task.Repository].
-func (mtr *MemoryTaskRepository) UpdateByID(_ context.Context, taskID string, task task.Task) error {
-	ctx := context.Background()
-	existTask, err := mtr.FindByID(ctx, task.ID)
-	
-	// task not found, add new task
+func (mtr *MemoryTaskRepository) UpdateTask(_ context.Context, taskID string, t task.Task) error {
+	err := t.Validate()
 	if err != nil {
-		return fmt.Errorf("fail to find task: %w", err)
+		return err
 	}
+	t.ID = taskID
 
-	// update task
-	existTask.Title = task.Title
-	existTask.IsDone = task.IsDone
-	return nil
+	// update
+	for i := range mtr.list {
+		if mtr.list[i].ID == taskID {
+			mtr.list[i] = domainToModel(t)
+			return nil
+		}
+	}
+	return task.ErrTaskNotFound
 }
 
-func NewMemoryTaskRepository() MemoryTaskRepository {
+func NewMemoryTaskRepository(tasklist TaskList) *MemoryTaskRepository {
+	
+	return &MemoryTaskRepository{
+		list: tasklist,
+	}
+}
+
+func NewMemoryTaskRepositoryWithSample() *MemoryTaskRepository {
 	newTask :=TaskModel{ID: "cbb87a8c-c30d-4f01-be30-83181b3d9b41", Title: "Makan siang", IsDone: false}
 	sampleTasks := []TaskModel{newTask}
 	
-	return MemoryTaskRepository{
-		list: sampleTasks,
-	}
+	return NewMemoryTaskRepository(sampleTasks)
 }
 
+// UpdateByID implements [query.GetTaskListReadModel].
 func (mtr MemoryTaskRepository) GetTaskList() ([]query.Task, error) {
 	return mtr.list.ToReadModel(), nil
 }
