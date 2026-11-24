@@ -16,26 +16,30 @@ import (
 
 type serverConfig struct {
 	ServerUrl string
+	hostport string
 }
 
-func NewServerConfig(t *testing.T) *serverConfig {
-	t.Helper()
+func NewServerConfig() *serverConfig {
 	taskServiceHttpAddr := os.Getenv("TASK_SERVICE_HTTP_ADDR")
 	if taskServiceHttpAddr == "" {
-		require.NotEmpty(t, taskServiceHttpAddr)
+		panic("require env TASK_SERVICE_HTTP_ADDR")
 	}
 
 	return &serverConfig{
-		ServerUrl: fmt.Sprintf("http://%s/api", taskServiceHttpAddr),
+		ServerUrl: fmt.Sprintf("http://%s/api/", taskServiceHttpAddr),
+		hostport: taskServiceHttpAddr,
 	}
 }
+
+var (
+	config = NewServerConfig()
+)
 
 type TaskHTTPClient struct {
 	client *taskclient.ClientWithResponses
 }
 
 func NewTaskHTTPClient(t *testing.T) TaskHTTPClient {
-	config := NewServerConfig(t)
 	// @todo @fix Add token if needed with add optional args
 	// see https://github.com/ThreeDotsLabs/wild-workouts-go-ddd-example/blob/8ecfcdf05b1462c4757bd2dcac9086c78e9f7791/internal/common/tests/clients.go#L39
 	client, err := task.NewClientWithResponses(config.ServerUrl)
@@ -48,10 +52,10 @@ func NewTaskHTTPClient(t *testing.T) TaskHTTPClient {
 
 func (c TaskHTTPClient) CreateTask(t *testing.T, title string) (taskID string) {
 	ctx := context.Background()
-	_, err := c.client.CreateTaskWithResponse(ctx, taskclient.CreateTaskJSONRequestBody{Title: title})
+	resp, err := c.client.CreateTaskWithResponse(ctx, taskclient.CreateTaskJSONRequestBody{Title: title})
 	require.NoError(t, err)
 
-	contentLocation := "true"
+	contentLocation := resp.HTTPResponse.Header.Get("Content-Location")
 	assert.NotEmpty(t, contentLocation)
 
 	taskID = lastPathElement(contentLocation)
