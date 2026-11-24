@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+vars:
+  GREETING: Hello, world!
+
+tasks:
+  default:
+    desc: Print a greeting message
+    cmds:
+      - echo "{{.GREETING}}"
+    silent: true
+  openapi:
+    desc: generate open api server and clients
+    cmds:
+      - cd internal/task && go tool oapi-codegen --package ports --generate std-http-server,models -o ports/server_interface.gen.go ../../api/task/openapi/openapi.yaml
+      - cd internal/task && go tool oapi-codegen --package task --generate client,models -o common/client/task/client.gen.go ../../api/task/openapi/openapi.yaml

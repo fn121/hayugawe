@@ -1,0 +1,178 @@
+openapi: 3.1.0
+
+info:
+  title: Hayugawe Task API
+  description: API for managing tasks
+  version: 1.0.0
+  license:
+    name: Apache 2.0
+    url: https://apache.org
+
+servers:
+  - url: http://{hostname}/api
+    description: Local development server
+    variables:
+      hostname:
+        default: localhost:8080
+
+security: []
+tags:
+  - name: Tasks
+    description: Task management
+
+paths:
+  /tasks:
+    get:
+      tags:
+        - Tasks
+      summary: Get task list
+      operationId: getTaskList
+      responses:
+        "200":
+          description: Task list retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HttpError"
+
+    post:
+      tags:
+        - Tasks
+      summary: Create a task
+      operationId: createTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostTask"
+      responses:
+        "204":
+          description: Task created successfully
+          headers:
+            Content-Location:
+              description: URI for created task
+              required: true
+              schema:
+                type: string
+                format: uri-reference
+                example: /tasks/12345
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HttpError"
+
+  /tasks/{taskId}/status/done:
+    patch:
+      tags:
+        - Tasks
+      summary: Mark task as done
+      operationId: markTaskAsDone
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          description: Task ID
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Task marked as done
+        "404":
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HttpError"
+
+  /tasks/{taskId}/status/todo:
+    patch:
+      tags:
+        - Tasks
+      summary: Mark task as todo
+      operationId: markTaskAsTodo
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          description: Task ID
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Task marked as todo
+        "404":
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HttpError"
+
+  /testcicd:
+    get:
+      tags:
+        - Tasks
+      summary: Test CI/CD deployment
+      operationId: testCICD
+      responses:
+        "200":
+          description: CI/CD pipeline test successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: build and deploy pipeline success
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HttpError"
+
+components:
+  schemas:
+    Task:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        is_done:
+          type: boolean
+      required:
+        - id
+        - title
+        - is_done
+
+    PostTask:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+      required:
+        - title
+
+    HttpError:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+      example:
+        message: Bad request
