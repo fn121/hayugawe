@@ -13,6 +13,11 @@ func NewApplication() app.Application {
 	return newApplication(taskRepo, taskRepo)
 }
 
+func NewComponentTestApplication() app.Application {
+	taskRepo := adapters.NewMemoryTaskRepositoryWithSample()
+	return newApplication(taskRepo, taskRepo)
+}
+
 func newApplication(repo task.Repository, queryRepo query.GetTaskListReadModel ) app.Application {
 
 	return app.Application{
